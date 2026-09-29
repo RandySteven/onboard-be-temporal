@@ -1,0 +1,33 @@
+configs:
+  server:
+    host: "0.0.0.0"
+    port: "8080"
+    timeout:
+      server: 30
+      read: 15
+      write: 10
+      idle: 5
+
+  db:
+    db: "mysql"
+    host: "127.0.0.1"
+    port: "3306"
+    ssl_mode: "disable"
+    dbname: "onboard"
+    dbuser: "root"
+    dbpass: "root"
+    max_idle_conns: 8
+    max_open_conns: 10
+    conn_max_lifetime: 10
+    conn_max_idletime: 8
+
+  temporal:
+    host: "localhost"
+    port: "7233"
+    task_queue: "onboard-queue"
+    namespace: "default"
+    workerOptions:
+      maxConcurrentActivityExecutionSize: 100
+      workerActivitiesPerSecond: 100.0
+      maxConcurrentLocalActivityExecutionSize: 100
+      workerLocalActivitiesPerSecond: 100.0
