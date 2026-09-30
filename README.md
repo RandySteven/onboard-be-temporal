@@ -100,4 +100,51 @@ Same go-cook pattern as memograph's `logic/onboarding`:
 - Register handler polls `RegisterResponse` until the activation token is ready
 - Activate handler decodes the JWT and `SignalWorkflow(..., true)`
 
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant API as API
+    participant Temporal
+    participant WF as onboarding_workflow_execution
+    participant MySQL
+
+    rect rgb(245, 245, 245)
+        Note over Client,MySQL: POST /auth/register
+        Client->>API: RegisterRequest
+        API->>Temporal: StartWorkflow(register)
+        Temporal->>WF: register(workflowID, request)
+        WF->>WF: SetQueryHandler(RegisterResponse)
+
+        WF->>MySQL: persist_onboarding_request_activity
+        MySQL-->>WF: onboardings row (PENDING)
+
+        WF->>MySQL: register_user_activity
+        MySQL-->>WF: users row (PROCESSING), onboarding ACTIVE
+        WF->>WF: issue activation JWT
+        WF->>WF: park on activated_user_signal
+
+        loop poll until RegisterResponse is ready
+            API->>Temporal: QueryWorkflow(RegisterResponse)
+            Temporal->>WF: query
+            WF-->>API: activation_token
+        end
+        API-->>Client: 201 RegisterResponse
+    end
+
+    rect rgb(245, 245, 245)
+        Note over Client,MySQL: POST /auth/activated
+        Client->>API: {token}
+        API->>API: decode JWT to workflow_id, run_id
+        API->>Temporal: SignalWorkflow(activated_user_signal, true)
+        Temporal->>WF: resume
+        WF->>MySQL: update_onboarding_status_activity
+        MySQL-->>WF: onboarding ONBOARDED, user ACTIVE
+        WF-->>Temporal: workflow complete
+        API->>Temporal: GetWorkflowResult
+        Temporal-->>API: result
+        API-->>Client: 200 ActivateResponse
+    end
+```
+
 This sample only supports `register_as: USER`. Vendor/boutique branches can be added later the same way memograph does.
