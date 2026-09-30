@@ -25,6 +25,8 @@ docker compose up -d
 docker compose ps
 ```
 
+
+
 ### Option B — local MySQL + Temporal CLI (what this machine uses)
 
 ```bash
@@ -44,16 +46,20 @@ Makefile shortcuts: `make up`, `make migrate`, `make run`.
 
 Local defaults (see `files/yaml/app.local.yml`):
 
-| Service | Address |
-| --- | --- |
-| API | http://localhost:8080 |
-| MySQL | `root:root@127.0.0.1:3306/onboard` |
-| Temporal | localhost:7233 |
-| Temporal UI | http://localhost:8088 |
+
+| Service     | Address                                        |
+| ----------- | ---------------------------------------------- |
+| API         | [http://localhost:8080](http://localhost:8080) |
+| MySQL       | `root:root@127.0.0.1:3306/onboard`             |
+| Temporal    | localhost:7233                                 |
+| Temporal UI | [http://localhost:8088](http://localhost:8088) |
+
 
 `go-cook`'s `NewMYSQLClient` currently builds a Postgres-style DSN and does not register `github.com/go-sql-driver/mysql`. This service uses go-cook's `DBClient`, `Save`/`Update`, and `MigrationWorker`, but opens MySQL with a standard `user:pass@tcp(host)/db` DSN in `apps/mysql.go`.
 
 ## Endpoints
+
+
 
 ### `POST /auth/register`
 
@@ -86,6 +92,8 @@ curl -s -X POST http://localhost:8080/auth/activated \
   -H 'Content-Type: application/json' \
   -d '{"token":"<activation_token>"}'
 ```
+
+
 
 ### `GET /health`
 
@@ -147,4 +155,5 @@ sequenceDiagram
     end
 ```
 
-This sample only supports `register_as: USER`. Vendor/boutique branches can be added later the same way memograph does.
+
+
