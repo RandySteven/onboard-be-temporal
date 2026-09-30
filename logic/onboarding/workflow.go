@@ -69,28 +69,9 @@ func (o *onboardingWorkflow) registerWorkflowAndActivities() {
 		ApprovalSignal:   sgActivatedUser,
 	}
 
-	o.workflow.AddResumableTransitionActivityWithOptions(
-		persistOnboardingRequestActivity,
-		o.persistRequest,
-		activityOption,
-		correctionOnly,
-		registerUserActivity,
-	)
-
-	o.workflow.AddResumableTransitionActivityWithOptions(
-		registerUserActivity,
-		o.registerUser,
-		activityOption,
-		registerThenActivate,
-		updateOnboardingStatusActivity,
-	)
-
-	o.workflow.AddResumableTransitionActivityWithOptions(
-		updateOnboardingStatusActivity,
-		o.updateOnboardingStatus,
-		activityOption,
-		correctionOnly,
-	)
+	o.workflow.AddResumableTransitionActivityWithOptions(persistOnboardingRequestActivity, o.persistRequest, activityOption, correctionOnly, registerUserActivity)
+	o.workflow.AddResumableTransitionActivityWithOptions(registerUserActivity, o.registerUser, activityOption, registerThenActivate, updateOnboardingStatusActivity)
+	o.workflow.AddResumableTransitionActivityWithOptions(updateOnboardingStatusActivity, o.updateOnboardingStatus, activityOption, correctionOnly)
 
 	o.workflow.RegisterWorkflow(onboardingWorkflowExecution, o.register)
 }
