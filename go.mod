@@ -4,7 +4,7 @@ go 1.26.1
 
 require (
 	github.com/RandySteven/go-cook/db v1.0.7-0.20260926062153-adf54a5846f6
-	github.com/RandySteven/go-cook/temporal v1.0.1-0.20260929161645-5fa92b8b5d15
+	github.com/RandySteven/go-cook/temporal v1.0.1-0.20261002162427-7f4538f4a3d3
 	github.com/go-sql-driver/mysql v1.10.1
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0

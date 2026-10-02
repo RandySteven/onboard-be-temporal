@@ -99,7 +99,7 @@ func (o *onboardingWorkflow) waitForRegisterResponse(ctx context.Context, workfl
 	defer ticker.Stop()
 
 	for {
-		status, statusErr := o.queryWorkflowStatus(waitCtx, workflowID, runID)
+		status, statusErr := o.workflow.GetWorkflowStatus(waitCtx, workflowID, runID)
 		if statusErr == nil {
 			switch status {
 			case temporal_client.StatusFailed, temporal_client.StatusRejected:
@@ -120,18 +120,6 @@ func (o *onboardingWorkflow) waitForRegisterResponse(ctx context.Context, workfl
 		case <-ticker.C:
 		}
 	}
-}
-
-func (o *onboardingWorkflow) queryWorkflowStatus(ctx context.Context, workflowID, runID string) (string, error) {
-	raw, err := o.temporal.QueryWorkflow(ctx, workflowID, runID, temporal_client.QueryGetStatus)
-	if err != nil {
-		return "", err
-	}
-	status, ok := raw.(string)
-	if !ok {
-		return "", fmt.Errorf("unexpected status query type %T", raw)
-	}
-	return status, nil
 }
 
 func decodeRegisterQueryResult(raw interface{}) *responses.RegisterResponse {
