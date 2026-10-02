@@ -101,12 +101,12 @@ Returns `{"status":"ok"}`.
 
 ## Workflow
 
-Same go-cook pattern as memograph's `logic/onboarding`:
+Uses go-cook/temporal `@c6981a4` (`AddTransitionActivityWithOptions`):
 
-- `AddResumableTransitionActivityWithOptions` for persist → register user → update status
-- `ApprovalSignal: activated_user_signal` after `register_user_activity`
+- persist and register user run immediately (empty `signalEvent`)
+- `update_onboarding_status_activity` parks on `activated_user_signal`, then marks the user onboarded
 - Register handler polls `RegisterResponse` until the activation token is ready
-- Activate handler decodes the JWT and `SignalWorkflow(..., true)`
+- Activate handler decodes the JWT and `SignalWorkflow(..., true)` to resume that parked step
 
 ```mermaid
 sequenceDiagram

@@ -23,8 +23,8 @@ const (
 	registerUserActivity             = "register_user_activity"
 	updateOnboardingStatusActivity   = "update_onboarding_status_activity"
 
-	sgOnboardingCorrection = temporal_client.DefaultCorrectionSignal
-	sgActivatedUser        = "activated_user_signal"
+	sgDefaultEvent       = ""
+	sgActivatedUserEvent = "activated_user_signal"
 
 	queryRegisterResponse = "RegisterResponse"
 
@@ -61,17 +61,11 @@ func (o *onboardingWorkflow) registerWorkflowAndActivities() {
 		},
 	}
 
-	correctionOnly := temporal_client.ResumableOptions{
-		CorrectionSignal: sgOnboardingCorrection,
-	}
-	registerThenActivate := temporal_client.ResumableOptions{
-		CorrectionSignal: sgOnboardingCorrection,
-		ApprovalSignal:   sgActivatedUser,
-	}
-
-	o.workflow.AddResumableTransitionActivityWithOptions(persistOnboardingRequestActivity, o.persistRequest, activityOption, correctionOnly, registerUserActivity)
-	o.workflow.AddResumableTransitionActivityWithOptions(registerUserActivity, o.registerUser, activityOption, registerThenActivate, updateOnboardingStatusActivity)
-	o.workflow.AddResumableTransitionActivityWithOptions(updateOnboardingStatusActivity, o.updateOnboardingStatus, activityOption, correctionOnly)
+	// Empty signalEvent = run immediately. Non-empty signalEvent parks until
+	// that Signal arrives, then runs the activity (go-cook @c6981a4).
+	o.workflow.AddTransitionActivityWithOptions(persistOnboardingRequestActivity, sgDefaultEvent, o.persistRequest, activityOption, registerUserActivity)
+	o.workflow.AddTransitionActivityWithOptions(registerUserActivity, sgDefaultEvent, o.registerUser, activityOption, updateOnboardingStatusActivity)
+	o.workflow.AddTransitionActivityWithOptions(updateOnboardingStatusActivity, sgActivatedUserEvent, o.updateOnboardingStatus, activityOption)
 
 	o.workflow.RegisterWorkflow(onboardingWorkflowExecution, o.register)
 }
@@ -172,7 +166,7 @@ func (o *onboardingWorkflow) ActivateUserRegisterWorkflow(ctx context.Context, r
 		return nil, apperror.NewCustomError(apperror.ErrBadRequest, "invalid token", err)
 	}
 
-	if err := o.workflow.SignalWorkflow(ctx, obj.WorkflowID, obj.RunID, sgActivatedUser, true); err != nil {
+	if err := o.workflow.SignalWorkflow(ctx, obj.WorkflowID, obj.RunID, sgActivatedUserEvent, true); err != nil {
 		return nil, apperror.NewCustomError(apperror.ErrInternalServer, "activation failed", err)
 	}
 

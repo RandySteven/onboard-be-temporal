@@ -15,6 +15,9 @@ require (
 	gopkg.in/yaml.v2 v2.4.0
 )
 
+// Local go-cook/temporal at c6981a4 (signal-gated AddTransitionActivityWithOptions).
+replace github.com/RandySteven/go-cook/temporal => ../go-cook/temporal
+
 require (
 	filippo.io/edwards25519 v1.2.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect

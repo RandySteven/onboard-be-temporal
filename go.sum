@@ -4,8 +4,6 @@ github.com/DATA-DOG/go-sqlmock v1.5.2 h1:OcvFkGmslmlZibjAjaHm3L//6LiuBgolP7Oputl
 github.com/DATA-DOG/go-sqlmock v1.5.2/go.mod h1:88MAG/4G7SMwSE3CeA0ZKzrT5CiOU3OJ+JlNzwDqpNU=
 github.com/RandySteven/go-cook/db v1.0.7-0.20260926062153-adf54a5846f6 h1:42BiVSHGmOMMEnF7DZ2FyAeIX9W+XmdWX9KQ1jameTU=
 github.com/RandySteven/go-cook/db v1.0.7-0.20260926062153-adf54a5846f6/go.mod h1:A+21p2GQdIG7TNFx0WHKxjk3NKupsuvnoDee9CUL+o0=
-github.com/RandySteven/go-cook/temporal v1.0.1-0.20260929161645-5fa92b8b5d15 h1:0gHmSM0m+1EXsThW8KxYiFvfHZioPacJ7wYD+LJMwxU=
-github.com/RandySteven/go-cook/temporal v1.0.1-0.20260929161645-5fa92b8b5d15/go.mod h1:AIslfBAWWSPKNKMD/4GcnnR7Rs4jP3nuGQmBe/3kt/8=
 github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=
 github.com/cespare/xxhash/v2 v2.3.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

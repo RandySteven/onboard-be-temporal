@@ -1,6 +1,7 @@
 package onboarding_workflow
 
 import (
+	"bytes"
 	"encoding/json"
 
 	temporal_client "github.com/RandySteven/go-cook/temporal"
@@ -31,48 +32,50 @@ func (e *ExecutionData) SetActivity(activityName string) {
 	e.CurrActivity = activityName
 }
 
-func (e *ExecutionData) GetStatus() string {
-	return e.Status
+func (e *ExecutionData) Marshal() ([]byte, error) {
+	return json.Marshal(e)
 }
 
-func (e *ExecutionData) SetStatus(status string) {
-	e.Status = status
-}
+func (e *ExecutionData) Unmarshal(data []byte) error {
+	data = bytes.TrimSpace(data)
+	if len(data) == 0 || string(data) == "null" {
+		return nil
+	}
 
-func (e *ExecutionData) ApplyCorrection(payload json.RawMessage) error {
+	// Activation signals `true` / `false` only to resume the parked step.
+	var flag bool
+	if err := json.Unmarshal(data, &flag); err == nil {
+		return nil
+	}
+
 	var asRequest requests.RegisterRequest
-	if err := json.Unmarshal(payload, &asRequest); err == nil && isRegisterRequestPatch(&asRequest) {
+	if err := json.Unmarshal(data, &asRequest); err == nil && isRegisterRequestPatch(&asRequest) {
 		e.Request = &asRequest
 		return nil
 	}
 
-	var next ExecutionData
-	if err := json.Unmarshal(payload, &next); err != nil {
-		return err
+	return json.Unmarshal(data, e)
+}
+
+func (e *ExecutionData) Clone() temporal_client.ExecutionData {
+	if e == nil {
+		return &ExecutionData{}
 	}
-	if next.Request != nil {
-		e.Request = next.Request
+	b, err := e.Marshal()
+	if err != nil {
+		c := *e
+		return &c
 	}
-	if next.ActivationToken != "" {
-		e.ActivationToken = next.ActivationToken
+	out := &ExecutionData{}
+	if err := json.Unmarshal(b, out); err != nil {
+		c := *e
+		return &c
 	}
-	return nil
+	return out
 }
 
 func isRegisterRequestPatch(req *requests.RegisterRequest) bool {
 	return req.Email != "" || req.Username != "" || req.FirstName != "" || req.PhoneNumber != ""
 }
 
-func (e *ExecutionData) JSONString() (string, error) {
-	jsonBytes, err := json.Marshal(e)
-	if err != nil {
-		return "", err
-	}
-	return string(jsonBytes), nil
-}
-
-var (
-	_ temporal_client.ExecutionWorkflow = (*ExecutionData)(nil)
-	_ temporal_client.StatusReporter    = (*ExecutionData)(nil)
-	_ temporal_client.CorrectionApplier = (*ExecutionData)(nil)
-)
+var _ temporal_client.ExecutionData = (*ExecutionData)(nil)
