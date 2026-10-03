@@ -2,7 +2,6 @@ package onboarding_workflow
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -85,67 +84,6 @@ func (o *onboardingWorkflow) OnboardingRegisterWorkflow(ctx context.Context, req
 		return nil, apperror.NewCustomError(apperror.ErrInternalServer, "there is wrong with get result", err)
 	}
 	return response, nil
-}
-
-func (o *onboardingWorkflow) waitForRegisterResponse(ctx context.Context, workflowID, runID string) (*responses.RegisterResponse, error) {
-	waitCtx := ctx
-	if _, hasDeadline := ctx.Deadline(); !hasDeadline {
-		var cancel context.CancelFunc
-		waitCtx, cancel = context.WithTimeout(ctx, registerClientWaitTimeout)
-		defer cancel()
-	}
-
-	ticker := time.NewTicker(registerClientPollInterval)
-	defer ticker.Stop()
-
-	for {
-		status, statusErr := o.workflow.GetWorkflowStatus(waitCtx, workflowID, runID)
-		if statusErr == nil {
-			switch status {
-			case temporal_client.StatusFailed, temporal_client.StatusRejected:
-				return nil, fmt.Errorf("onboarding workflow %s", status)
-			}
-		}
-
-		raw, err := o.temporal.QueryWorkflow(waitCtx, workflowID, runID, queryRegisterResponse)
-		if err == nil {
-			if resp := decodeRegisterQueryResult(raw); registerResponseReady(resp) {
-				return resp, nil
-			}
-		}
-
-		select {
-		case <-waitCtx.Done():
-			return nil, waitCtx.Err()
-		case <-ticker.C:
-		}
-	}
-}
-
-func decodeRegisterQueryResult(raw interface{}) *responses.RegisterResponse {
-	if raw == nil {
-		return nil
-	}
-	if resp, ok := raw.(*responses.RegisterResponse); ok {
-		return resp
-	}
-	if resp, ok := raw.(responses.RegisterResponse); ok {
-		return &resp
-	}
-
-	bytes, err := json.Marshal(raw)
-	if err != nil {
-		return nil
-	}
-	var resp responses.RegisterResponse
-	if err := json.Unmarshal(bytes, &resp); err != nil {
-		return nil
-	}
-	return &resp
-}
-
-func registerResponseReady(resp *responses.RegisterResponse) bool {
-	return resp != nil && (resp.ActivationToken != "" || resp.OnboardingID != 0)
 }
 
 func (o *onboardingWorkflow) ActivateUserRegisterWorkflow(ctx context.Context, request *requests.ActivateRequest) (*responses.ActivateResponse, *apperror.CustomError) {
